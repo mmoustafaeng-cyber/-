@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>بلاغات الصيانة العامة – مستشفى الليث العام</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f2f2f2;
+            direction: rtl;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        label { display: block; margin-top: 15px; }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #0056b3; }
+        .lang-switch {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .lang-switch button {
+            width: auto;
+            margin: 5px;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="lang-switch">
+            <button onclick="switchLang('ar')">العربية</button>
+            <button onclick="switchLang('en')">English</button>
+        </div>
+
+        <h2 id="title">بلاغات الصيانة العامة – مستشفى الليث العام</h2>
+
+        <form>
+            <label id="locationLabel">موقع البلاغ</label>
+            <input type="text" required />
+
+            <label id="nameLabel">الاسم</label>
+            <input type="text" required />
+
+            <label id="phoneLabel">رقم التواصل</label>
+            <input type="text" required />
+
+            <label id="typeLabel">نوع المشكلة</label>
+            <select>
+                <option>كهرباء</option>
+                <option>سباكة</option>
+                <option>مكيفات</option>
+                <option>أخرى</option>
+            </select>
+
+            <label id="descLabel">وصف البلاغ</label>
+            <textarea rows="5"></textarea>
+
+            <label id="imgLabel">رفع صورة (اختياري)</label>
+            <input type="file" />
+
+            <button id="submitBtn">إرسال البلاغ</button>
+            <button type="button" onclick="printTicket()" style="background:#28a745">طباعة البلاغ / Print</button>
+        </form>
+    </div>
+
+    <script>
+        let ticketId = null;
+
+        function generateTicketId() {
+            const now = new Date();
+            return 'R-' + now.getFullYear() + (now.getMonth()+1) + now.getDate() + '-' + Math.floor(Math.random()*9000+1000);
+        }
+
+        async function sendToSheet(data) {
+            const scriptURL = "PUT_YOUR_APPS_SCRIPT_URL_HERE";
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }
+
+        function printTicket() {
+            window.print();
+        }
+
+        function switchLang(lang) {
+            if (lang === 'ar') {
+                document.body.style.direction = 'rtl';
+                document.getElementById('title').textContent = 'بلاغات الصيانة العامة – مستشفى الليث العام';
+                document.getElementById('locationLabel').textContent = 'موقع البلاغ';
+                document.getElementById('nameLabel').textContent = 'الاسم';
+                document.getElementById('phoneLabel').textContent = 'رقم التواصل';
+                document.getElementById('typeLabel').textContent = 'نوع المشكلة';
+                document.getElementById('descLabel').textContent = 'وصف البلاغ';
+                document.getElementById('imgLabel').textContent = 'رفع صورة (اختياري)';
+                document.getElementById('submitBtn').textContent = 'إرسال البلاغ';
+            } else {
+                document.body.style.direction = 'ltr';
+                document.getElementById('title').textContent = 'General Maintenance Requests – Al-Leith General Hospital';
+                document.getElementById('locationLabel').textContent = 'Location of Issue';
+                document.getElementById('nameLabel').textContent = 'Name';
+                document.getElementById('phoneLabel').textContent = 'Phone Number';
+                document.getElementById('typeLabel').textContent = 'Issue Type';
+                document.getElementById('descLabel').textContent = 'Description';
+                document.getElementById('imgLabel').textContent = 'Upload Image (optional)';
+                document.getElementById('submitBtn').textContent = 'Submit Request';
+            }
+        }
+
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            ticketId = generateTicketId();
+
+            const fields = document.querySelectorAll('input, textarea, select');
+            const data = { ticketId: ticketId };
+            fields.forEach(f => data[f.previousElementSibling.textContent] = f.value);
+
+            await sendToSheet(data);
+            alert('تم إرسال البلاغ بنجاح. رقم البلاغ: ' + ticketId);
+        });
+    </script>
+</body>
+</html>
